@@ -772,9 +772,9 @@ describe(startDeviceSessionHostAsync, () => {
     'turn-credential',
   ];
   const websiteArgs = ['--cors-origin', 'https://expo.dev', '--frame-ancestor', 'https://expo.dev'];
+  const authtoken = 'ngrok-token';
   const env = {
     DEVICE_RUN_SESSION_ID: 'drs-id',
-    NGROK_AUTHTOKEN: 'ngrok-token',
   } as unknown as BuildStepEnv;
 
   beforeEach(() => {
@@ -856,7 +856,7 @@ describe(startDeviceSessionHostAsync, () => {
       timeoutMs: 10_000,
       packageVersion,
     });
-    const preview = await host.openPreviewAsync({ baseDomain });
+    const preview = await host.openPreviewAsync({ baseDomain, authtoken });
 
     const spawnCalls = jest.mocked(spawn).mock.calls;
     expect(spawnCalls[0]).toEqual([
@@ -909,7 +909,7 @@ describe(startDeviceSessionHostAsync, () => {
       logger: createLoggerMock(),
       timeoutMs: 10_000,
     });
-    const preview = await host.openPreviewAsync({ baseDomain });
+    const preview = await host.openPreviewAsync({ baseDomain, authtoken });
 
     expect(preview.previewToken).toBe('tok-1');
     expect(preview.apiUrl).toBe('https://preview.example.test');
@@ -938,7 +938,7 @@ describe(startDeviceSessionHostAsync, () => {
       logger: createLoggerMock(),
       timeoutMs: 10_000,
     });
-    const preview = await host.openPreviewAsync({ baseDomain });
+    const preview = await host.openPreviewAsync({ baseDomain, authtoken });
 
     expect(preview.previewPageUrl).toMatch(
       /^https:\/\/staging\.expo\.dev\/simulator-preview\/[a-f0-9]{32}$/
@@ -980,7 +980,7 @@ describe(startDeviceSessionHostAsync, () => {
       logger: createLoggerMock(),
       timeoutMs: 10_000,
     });
-    const preview = await host.openPreviewAsync({ baseDomain });
+    const preview = await host.openPreviewAsync({ baseDomain, authtoken });
 
     expect(preview.previewToken).toBeUndefined();
     const [, args] = jest.mocked(spawn).mock.calls[0];
@@ -1002,7 +1002,7 @@ describe(startDeviceSessionHostAsync, () => {
       timeoutMs: 10_000,
       packageVersion,
     });
-    const preview = await host.openPreviewAsync({ baseDomain });
+    const preview = await host.openPreviewAsync({ baseDomain, authtoken });
 
     const [command, args] = jest.mocked(spawn).mock.calls[0];
     const port = Number(args[args.indexOf('--port') + 1]);
@@ -1041,7 +1041,7 @@ describe(startDeviceSessionHostAsync, () => {
       timeoutMs: 10_000,
       packageVersion: '4.5.6',
     });
-    const preview = await host.openPreviewAsync({ baseDomain });
+    const preview = await host.openPreviewAsync({ baseDomain, authtoken });
 
     const [command, args] = jest.mocked(spawn).mock.calls[0];
     const port = Number(args[args.indexOf('--port') + 1]);
@@ -1075,7 +1075,7 @@ describe(startDeviceSessionHostAsync, () => {
       logger: createLoggerMock(),
       timeoutMs: 10_000,
     });
-    const preview = await host.openPreviewAsync({ baseDomain });
+    const preview = await host.openPreviewAsync({ baseDomain, authtoken });
 
     const [command, args] = jest.mocked(spawn).mock.calls[0];
     const port = Number(args[args.indexOf('--port') + 1]);

@@ -43,6 +43,7 @@ import {
   getDeviceRunSessionIdOrThrow,
   getNgrokAuthtokenOrThrow,
   getNgrokTunnelDomainOrThrow,
+  omitNgrokAuthtoken,
   parseServeSimLaunchInputs,
   selectXcodeDeveloperDirectoryAsync,
   spawnDetached,
@@ -82,10 +83,11 @@ export function createStartAppiumRemoteSessionBuildFunction(
         allowedValueTypeName: BuildStepInputValueTypeName.NUMBER,
       }),
     ],
-    fn: withLocalEgressSession(async ({ logger, global }, { inputs, env, signal }) => {
-      const deviceRunSessionId = getDeviceRunSessionIdOrThrow(env);
-      const ngrokTunnelDomain = getNgrokTunnelDomainOrThrow(env);
-      const ngrokAuthtoken = getNgrokAuthtokenOrThrow(env);
+    fn: withLocalEgressSession(async ({ logger, global }, { inputs, env: stepEnv, signal }) => {
+      const deviceRunSessionId = getDeviceRunSessionIdOrThrow(stepEnv);
+      const ngrokTunnelDomain = getNgrokTunnelDomainOrThrow(stepEnv);
+      const ngrokAuthtoken = getNgrokAuthtokenOrThrow(stepEnv);
+      const env = omitNgrokAuthtoken(stepEnv);
       const packageVersion = inputs.package_version.value as string | undefined;
       const maxIdleTimeMinutes = inputs.max_idle_time_minutes.value as number | undefined;
       const { runtimePlatform } = global;
@@ -186,7 +188,10 @@ export function createStartAppiumRemoteSessionBuildFunction(
           networkCapture,
           networkCaptureFields,
         });
-        const webPreview = await sessionHost.openPreviewAsync({ baseDomain: ngrokTunnelDomain });
+        const webPreview = await sessionHost.openPreviewAsync({
+          baseDomain: ngrokTunnelDomain,
+          authtoken: ngrokAuthtoken,
+        });
 
         await uploadRemoteSessionConfigWithLocalEgressAsync({
           env,

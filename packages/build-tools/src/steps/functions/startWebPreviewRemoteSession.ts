@@ -19,7 +19,9 @@ import {
   createServeSimLaunchInputProviders,
   describeServeSimLaunch,
   getDeviceRunSessionIdOrThrow,
+  getNgrokAuthtokenOrThrow,
   getNgrokTunnelDomainOrThrow,
+  omitNgrokAuthtoken,
   parseServeSimLaunchInputs,
   selectXcodeDeveloperDirectoryAsync,
   waitForDeviceRunSessionStoppedAsync,
@@ -49,9 +51,11 @@ export function createStartWebPreviewRemoteSessionBuildFunction(
         allowedValueTypeName: BuildStepInputValueTypeName.NUMBER,
       }),
     ],
-    fn: withLocalEgressSession(async ({ logger, global }, { inputs, env, signal }) => {
-      const deviceRunSessionId = getDeviceRunSessionIdOrThrow(env);
-      const ngrokTunnelDomain = getNgrokTunnelDomainOrThrow(env);
+    fn: withLocalEgressSession(async ({ logger, global }, { inputs, env: stepEnv, signal }) => {
+      const deviceRunSessionId = getDeviceRunSessionIdOrThrow(stepEnv);
+      const ngrokTunnelDomain = getNgrokTunnelDomainOrThrow(stepEnv);
+      const ngrokAuthtoken = getNgrokAuthtokenOrThrow(stepEnv);
+      const env = omitNgrokAuthtoken(stepEnv);
       const maxDurationSeconds = inputs.max_duration_seconds?.value as number | undefined;
       const packageVersion = inputs.package_version?.value as string | undefined;
       const { runtimePlatform } = global;
@@ -95,7 +99,10 @@ export function createStartWebPreviewRemoteSessionBuildFunction(
       });
 
       try {
-        const webPreview = await sessionHost.openPreviewAsync({ baseDomain: ngrokTunnelDomain });
+        const webPreview = await sessionHost.openPreviewAsync({
+          baseDomain: ngrokTunnelDomain,
+          authtoken: ngrokAuthtoken,
+        });
         logger.info(`Preview URL: ${webPreview.previewPageUrl} (server: ${webPreview.apiUrl}).`);
         await uploadRemoteSessionConfigWithLocalEgressAsync({
           env,
